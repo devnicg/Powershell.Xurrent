@@ -1,12 +1,12 @@
 @{
     # Module metadata
-    RootModule        = 'Xurrent.psm1'
+    RootModule        = 'Xurrent.REST.psm1'
     ModuleVersion     = '1.0.0'
     GUID              = '6f7cfaf2-f34c-4266-9e76-854e586f3b2b'
     Author            = 'Xurrent Module Contributors'
     CompanyName       = 'Community'
     Copyright         = '(c) 2024. All rights reserved.'
-    Description       = 'PowerShell module for querying and managing the Xurrent REST API (https://developer.xurrent.com/v1/).'
+    Description       = 'PowerShell module for querying and managing the Xurrent REST API (https://developer.xurrent.com/v1/). Part of the Powershell.Xurrent project.'
     PowerShellVersion = '7.0'
 
     # Functions to export
@@ -84,7 +84,7 @@
 
     PrivateData = @{
         PSData = @{
-            Tags         = @('Xurrent', 'ITSM', 'REST', 'API', '4me')
+            Tags         = @('Xurrent', 'ITSM', 'REST', 'API', '4me', 'Xurrent.REST')
             LicenseUri   = 'https://github.com/devnicg/Powershell.Xurrent/blob/master/LICENSE'
             ProjectUri   = 'https://github.com/devnicg/Powershell.Xurrent'
             ReleaseNotes = 'Initial release: full CRUD support for Requests, People, Teams, Organizations, Services, ServiceInstances, Tasks, Changes, Problems, Sites, and TimeEntries.'
