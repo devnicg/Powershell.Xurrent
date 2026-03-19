@@ -20,12 +20,20 @@ function Set-XurrentRequest {
         ID of the team to reassign the request to.
     .PARAMETER MemberId
         ID of the person to reassign the request to.
+    .PARAMETER TemplateId
+        ID of the request template to apply to the request.
+    .PARAMETER CustomFields
+        Hashtable of custom field values defined by the UI Extension linked
+        to the request template.  Keys are the custom-field IDs and values
+        are the field values.
     .PARAMETER AdditionalProperties
         Hashtable of additional API fields to update.
     .EXAMPLE
         Set-XurrentRequest -Id 12345 -Status 'solved'
     .EXAMPLE
         Set-XurrentRequest -Id 12345 -TeamId 202 -Impact 'high'
+    .EXAMPLE
+        Set-XurrentRequest -Id 12345 -CustomFields @{ badge = 'VIP' }
     .OUTPUTS
         PSCustomObject representing the updated request.
     #>
@@ -55,6 +63,12 @@ function Set-XurrentRequest {
         [int] $MemberId,
 
         [Parameter()]
+        [int] $TemplateId,
+
+        [Parameter()]
+        [hashtable] $CustomFields,
+
+        [Parameter()]
         [hashtable] $AdditionalProperties
     )
 
@@ -66,7 +80,16 @@ function Set-XurrentRequest {
         if ($PSBoundParameters.ContainsKey('Impact'))   { $body.impact   = $Impact }
         if ($PSBoundParameters.ContainsKey('Status'))   { $body.status   = $Status }
         if ($PSBoundParameters.ContainsKey('TeamId'))   { $body.team     = @{ id = $TeamId } }
-        if ($PSBoundParameters.ContainsKey('MemberId')) { $body.member   = @{ id = $MemberId } }
+        if ($PSBoundParameters.ContainsKey('MemberId'))    { $body.member   = @{ id = $MemberId } }
+        if ($PSBoundParameters.ContainsKey('TemplateId'))  { $body.template = @{ id = $TemplateId } }
+
+        if ($PSBoundParameters.ContainsKey('CustomFields')) {
+            $body.custom_fields = @(
+                foreach ($key in $CustomFields.Keys) {
+                    @{ id = $key; value = $CustomFields[$key] }
+                }
+            )
+        }
 
         if ($AdditionalProperties) {
             foreach ($key in $AdditionalProperties.Keys) {
