@@ -189,6 +189,33 @@ Describe 'New-XurrentRequest' {
             $Body -like '*55*'
         }
     }
+
+    It 'Should include TemplateId when specified' {
+        Mock -ModuleName Xurrent Invoke-RestMethod {
+            return [PSCustomObject]@{ id = 1003 }
+        }
+
+        New-XurrentRequest -Subject 'Onboarding' -TemplateId 42
+
+        Should -Invoke -ModuleName Xurrent -CommandName Invoke-RestMethod -Times 1 -ParameterFilter {
+            $Body -like '*template*' -and $Body -like '*42*'
+        }
+    }
+
+    It 'Should convert CustomFields hashtable to API array format' {
+        Mock -ModuleName Xurrent Invoke-RestMethod {
+            return [PSCustomObject]@{ id = 1004 }
+        }
+
+        New-XurrentRequest -Subject 'Test CF' -TemplateId 10 -CustomFields @{
+            first_name = 'Howard'
+            last_name  = 'Tanner'
+        }
+
+        Should -Invoke -ModuleName Xurrent -CommandName Invoke-RestMethod -Times 1 -ParameterFilter {
+            $Body -like '*custom_fields*' -and $Body -like '*first_name*' -and $Body -like '*Howard*'
+        }
+    }
 }
 
 Describe 'Set-XurrentRequest' {
@@ -212,6 +239,30 @@ Describe 'Set-XurrentRequest' {
         Mock -ModuleName Xurrent Invoke-RestMethod {}
 
         Set-XurrentRequest -Id 12345 3>&1 | Should -Match 'No update properties'
+    }
+
+    It 'Should include TemplateId when specified' {
+        Mock -ModuleName Xurrent Invoke-RestMethod {
+            return [PSCustomObject]@{ id = 12345 }
+        }
+
+        Set-XurrentRequest -Id 12345 -TemplateId 99
+
+        Should -Invoke -ModuleName Xurrent -CommandName Invoke-RestMethod -Times 1 -ParameterFilter {
+            $Body -like '*template*' -and $Body -like '*99*'
+        }
+    }
+
+    It 'Should include CustomFields when specified' {
+        Mock -ModuleName Xurrent Invoke-RestMethod {
+            return [PSCustomObject]@{ id = 12345 }
+        }
+
+        Set-XurrentRequest -Id 12345 -CustomFields @{ badge = 'VIP' }
+
+        Should -Invoke -ModuleName Xurrent -CommandName Invoke-RestMethod -Times 1 -ParameterFilter {
+            $Body -like '*custom_fields*' -and $Body -like '*badge*' -and $Body -like '*VIP*'
+        }
     }
 }
 
