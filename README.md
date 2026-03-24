@@ -1,37 +1,24 @@
 # Powershell.Xurrent
 
-A PowerShell module for querying and managing the [Xurrent REST API](https://developer.xurrent.com/v1/).  
-Provides complete CRUD support for Requests, People, Teams, Organizations, Services, Service Instances, Tasks, Changes, Problems, Sites, and Time Entries.
+PowerShell modules for querying and managing the [Xurrent](https://developer.xurrent.com/) platform. This project provides two separate modules:
+
+- **Xurrent.REST** — Wraps the [Xurrent REST API](https://developer.xurrent.com/v1/) with full CRUD support.
+- **Xurrent.GraphQL** — Wraps the [Xurrent GraphQL API](https://developer.xurrent.com/graphql/) with query, mutation, and cursor-based pagination support.
+
+Both modules support Requests, People, Teams, Organizations, Services, Service Instances, Tasks, Changes, Problems, Sites, and Time Entries.
 
 ## Table of Contents
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Getting Started](#getting-started)
-  - [Connecting](#connecting)
-  - [Disconnecting](#disconnecting)
-- [Cmdlet Reference](#cmdlet-reference)
-  - [Connection](#connection)
-  - [Requests](#requests)
-  - [Notes](#notes)
-  - [People](#people)
-  - [Teams](#teams)
-  - [Organizations](#organizations)
-  - [Services](#services)
-  - [Service Instances](#service-instances)
-  - [Tasks](#tasks)
-  - [Changes](#changes)
-  - [Problems](#problems)
-  - [Sites](#sites)
-  - [Time Entries](#time-entries)
-  - [Generic Query](#generic-query)
-- [Advanced Usage](#advanced-usage)
-  - [Filtering Results](#filtering-results)
-  - [Pagination](#pagination)
-  - [Selecting Fields](#selecting-fields)
-  - [Custom Fields](#custom-fields)
-  - [Pipeline Support](#pipeline-support)
-  - [WhatIf and Confirm](#whatif-and-confirm)
+- [Xurrent.REST Module](#xurrentrest-module)
+  - [Connecting (REST)](#connecting-rest)
+  - [REST Cmdlet Reference](#rest-cmdlet-reference)
+  - [REST Advanced Usage](#rest-advanced-usage)
+- [Xurrent.GraphQL Module](#xurrentgraphql-module)
+  - [Connecting (GraphQL)](#connecting-graphql)
+  - [GraphQL Cmdlet Reference](#graphql-cmdlet-reference)
+  - [GraphQL Advanced Usage](#graphql-advanced-usage)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -40,7 +27,7 @@ Provides complete CRUD support for Requests, People, Teams, Organizations, Servi
 ## Requirements
 
 - PowerShell **7.0** or later
-- A valid Xurrent API token and account identifier
+- A valid Xurrent API token (Personal Access Token or OAuth token) and account identifier
 
 ---
 
@@ -49,26 +36,32 @@ Provides complete CRUD support for Requests, People, Teams, Organizations, Servi
 ### From the PowerShell Gallery (recommended)
 
 ```powershell
-Install-Module -Name Xurrent
+# Install the REST module
+Install-Module -Name Xurrent.REST
+
+# Install the GraphQL module
+Install-Module -Name Xurrent.GraphQL
 ```
 
 ### Manual installation
 
 1. Clone or download this repository.
-2. Copy the `Xurrent/` folder to a directory in your `$env:PSModulePath`.
-3. Import the module:
+2. Copy the `Xurrent.REST/` and/or `Xurrent.GraphQL/` folders to a directory in your `$env:PSModulePath`.
+3. Import the module you need:
 
 ```powershell
-Import-Module Xurrent
+Import-Module Xurrent.REST
+# or
+Import-Module Xurrent.GraphQL
 ```
 
 ---
 
-## Getting Started
+## Xurrent.REST Module
 
-### Connecting
+The REST module provides full CRUD operations against the Xurrent REST API (`https://api.xurrent.com/v1/`).
 
-Before using any other cmdlet, establish a connection with `Connect-Xurrent`.
+### Connecting (REST)
 
 ```powershell
 # Connect to the EU region (default)
@@ -79,388 +72,271 @@ Connect-Xurrent -ApiToken 'your-api-token' -Account 'your-account' -Region 'US'
 
 # Connect using a custom base URI (on-premises / sandbox)
 Connect-Xurrent -ApiToken 'your-api-token' -Account 'your-account' -BaseUri 'https://sandbox.example.com/v1'
+
+# Disconnect
+Disconnect-Xurrent
 ```
 
 Supported regions: `EU` (default), `US`, `AU`, `UK`, `CH`, `QA`.
 
-> **Security tip:** Avoid storing your API token in plain text. Use `Read-Host -AsSecureString` or a secrets manager to retrieve it at runtime.
+> **Security tip:** Avoid storing your API token in plain text. Use `Read-Host -AsSecureString` or a secrets manager.
 
-### Disconnecting
-
-```powershell
-Disconnect-Xurrent
-```
-
-Clears the stored connection context. Subsequent cmdlet calls will fail until you call `Connect-Xurrent` again.
-
----
-
-## Cmdlet Reference
-
-### Connection
+### REST Cmdlet Reference
 
 | Cmdlet | Description |
 |--------|-------------|
 | `Connect-Xurrent` | Stores API credentials for all subsequent calls |
 | `Disconnect-Xurrent` | Clears the stored connection context |
+| `Invoke-XurrentQuery` | Execute any REST API call with full control |
+| `Get-XurrentRequest` | List or retrieve requests |
+| `New-XurrentRequest` | Create a new request |
+| `Set-XurrentRequest` | Update an existing request |
+| `Remove-XurrentRequest` | Delete a request |
+| `Add-XurrentNote` | Add a note to a request |
+| `Get-XurrentPerson` | List or retrieve people |
+| `New-XurrentPerson` | Create a person |
+| `Set-XurrentPerson` | Update a person |
+| `Remove-XurrentPerson` | Delete a person |
+| `Get-XurrentTeam` | List or retrieve teams |
+| `New-XurrentTeam` | Create a team |
+| `Set-XurrentTeam` | Update a team |
+| `Get-XurrentOrganization` | List or retrieve organizations |
+| `New-XurrentOrganization` | Create an organization |
+| `Set-XurrentOrganization` | Update an organization |
+| `Get-XurrentService` | List or retrieve services |
+| `New-XurrentService` | Create a service |
+| `Set-XurrentService` | Update a service |
+| `Get-XurrentServiceInstance` | List or retrieve service instances |
+| `New-XurrentServiceInstance` | Create a service instance |
+| `Set-XurrentServiceInstance` | Update a service instance |
+| `Get-XurrentTask` | List or retrieve tasks |
+| `New-XurrentTask` | Create a task |
+| `Set-XurrentTask` | Update a task |
+| `Get-XurrentChange` | List or retrieve changes |
+| `New-XurrentChange` | Create a change |
+| `Set-XurrentChange` | Update a change |
+| `Get-XurrentProblem` | List or retrieve problems |
+| `New-XurrentProblem` | Create a problem |
+| `Set-XurrentProblem` | Update a problem |
+| `Get-XurrentSite` | List or retrieve sites |
+| `New-XurrentSite` | Create a site |
+| `Get-XurrentTimeEntry` | List or retrieve time entries |
+| `New-XurrentTimeEntry` | Create a time entry |
+| `Set-XurrentTimeEntry` | Update a time entry |
 
----
+### REST Advanced Usage
 
-### Requests
-
-Manage service requests, incidents, RFCs, RFIs, complaints, and compliments.
-
-#### `Get-XurrentRequest`
+#### Filtering
 
 ```powershell
-# List the first page of requests
-Get-XurrentRequest
-
-# Retrieve a single request by ID
-Get-XurrentRequest -Id 12345
-
-# Filter requests and retrieve all pages
 Get-XurrentRequest -Filter @{ status = 'in_progress'; category = 'incident' } -AllPages
-
-# Control page size
-Get-XurrentRequest -PerPage 50
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `-Id` | `int` | ID of a specific request. Accepts pipeline input. |
-| `-Filter` | `hashtable` | Key/value pairs mapped to `filter[key]=value` query parameters. |
-| `-Fields` | `string` | Comma-separated list of fields to return (e.g. `'id,subject,status'`). |
-| `-PerPage` | `int` | Records per page (1–100, default 25). |
-| `-AllPages` | `switch` | Follow pagination and return all matching records. |
-
-#### `New-XurrentRequest`
+#### Pagination
 
 ```powershell
-# Minimal request
-New-XurrentRequest -Subject 'Email not working' -Category 'incident'
-
-# Request with assignment and impact
-New-XurrentRequest -Subject 'New laptop' -Category 'rfc' -Impact 'medium' -TeamId 101
-
-# Request with a template and custom fields
-New-XurrentRequest -Subject 'Onboarding' -TemplateId 42 -CustomFields @{
-    first_name = 'Howard'
-    last_name  = 'Tanner'
-    start_date = '2026-04-01'
-}
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `-Subject` | `string` | **(Required)** Request subject / title. |
-| `-Category` | `string` | `incident` (default), `rfc`, `rfi`, `complaint`, `compliment`, `other`. |
-| `-Impact` | `string` | `top`, `high`, `medium`, `low`, `none`. |
-| `-Status` | `string` | Initial status (e.g. `new`, `assigned`, `in_progress`). |
-| `-Note` | `string` | Text of an initial note. |
-| `-ServiceInstanceId` | `int` | ID of the service instance to associate. |
-| `-TeamId` | `int` | ID of the team to assign. |
-| `-MemberId` | `int` | ID of the person to assign. |
-| `-RequestedById` | `int` | ID of the person on whose behalf the request is submitted. |
-| `-TemplateId` | `int` | ID of a request template to apply. |
-| `-CustomFields` | `hashtable` | Custom field values (see [Custom Fields](#custom-fields)). |
-| `-AdditionalProperties` | `hashtable` | Any other API fields not covered by explicit parameters. |
-
-#### `Set-XurrentRequest`
-
-```powershell
-# Update status
-Set-XurrentRequest -Id 12345 -Status 'solved'
-
-# Reassign and change impact
-Set-XurrentRequest -Id 12345 -TeamId 202 -Impact 'high'
-
-# Update custom fields
-Set-XurrentRequest -Id 12345 -CustomFields @{ badge = 'VIP' }
-```
-
-Accepts the same optional parameters as `New-XurrentRequest` (except `-Note` and `-RequestedById`), plus `-Subject`. Only the fields you provide are changed (PATCH semantics).
-
-#### `Remove-XurrentRequest`
-
-```powershell
-Remove-XurrentRequest -Id 12345
-```
-
----
-
-### Notes
-
-#### `Add-XurrentNote`
-
-```powershell
-# Public note (visible to requester)
-Add-XurrentNote -RequestId 12345 -Text 'Working on this now.'
-
-# Internal note (visible to agents only)
-Add-XurrentNote -RequestId 12345 -Text 'Escalated to L2.' -Internal
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `-RequestId` | `int` | **(Required)** ID of the request to add the note to. |
-| `-Text` | `string` | **(Required)** Note content. |
-| `-Internal` | `switch` | When set, the note is internal (not visible to the requester). |
-
----
-
-### People
-
-```powershell
-# List all people
-Get-XurrentPerson -AllPages
-
-# Get a specific person
-Get-XurrentPerson -Id 99
-
-# Create a person
-New-XurrentPerson -PrimaryEmail 'bob@example.com' -Name 'Bob Smith' `
-    -JobTitle 'Engineer' -OrganizationId 5 -TimeZone 'Europe/Amsterdam'
-
-# Update a person
-Set-XurrentPerson -Id 99 -JobTitle 'Senior Engineer'
-
-# Delete a person
-Remove-XurrentPerson -Id 99
-```
-
-`New-XurrentPerson` parameters: `-PrimaryEmail` (required), `-Name` (required), `-JobTitle`, `-OrganizationId`, `-SiteId`, `-TimeZone`, `-Language`, `-AdditionalProperties`.
-
----
-
-### Teams
-
-```powershell
-Get-XurrentTeam
-Get-XurrentTeam -Id 10
-New-XurrentTeam -Name 'Service Desk' -ManagerId 42
-Set-XurrentTeam -Id 10 -Name 'IT Service Desk'
-```
-
-`New-XurrentTeam` parameters: `-Name` (required), `-ManagerId`, `-AdditionalProperties`.
-
----
-
-### Organizations
-
-```powershell
-Get-XurrentOrganization
-Get-XurrentOrganization -Id 5
-New-XurrentOrganization -Name 'Acme Corp' -ManagerId 1
-Set-XurrentOrganization -Id 5 -Name 'Acme Corporation'
-```
-
-`New-XurrentOrganization` parameters: `-Name` (required), `-ManagerId`, `-ParentId`, `-AdditionalProperties`.
-
----
-
-### Services
-
-```powershell
-Get-XurrentService
-Get-XurrentService -Id 7
-New-XurrentService -Name 'Email' -ServiceOwnerId 42
-Set-XurrentService -Id 7 -Name 'Corporate Email'
-```
-
-`New-XurrentService` parameters: `-Name` (required), `-ServiceOwnerId`, `-AdditionalProperties`.
-
----
-
-### Service Instances
-
-```powershell
-Get-XurrentServiceInstance
-Get-XurrentServiceInstance -Id 20
-New-XurrentServiceInstance -Name 'Email - Production' -ServiceId 7 -Status 'operational'
-Set-XurrentServiceInstance -Id 20 -Status 'degraded'
-```
-
-`New-XurrentServiceInstance` parameters: `-Name` (required), `-ServiceId` (required), `-Status` (`operational`, `degraded`, `disrupted`, `unavailable`), `-AdditionalProperties`.
-
----
-
-### Tasks
-
-```powershell
-Get-XurrentTask
-Get-XurrentTask -Id 55
-New-XurrentTask -Subject 'Backup database' -WorkflowId 300 -TeamId 10
-Set-XurrentTask -Id 55 -Status 'completed'
-```
-
-`New-XurrentTask` parameters: `-Subject` (required), `-WorkflowId` (required), `-AssignedToId`, `-TeamId`, `-Status`, `-AdditionalProperties`.
-
----
-
-### Changes
-
-```powershell
-Get-XurrentChange
-Get-XurrentChange -Id 200
-New-XurrentChange -Subject 'Deploy new firewall' -Category 'standard' -Impact 'medium'
-Set-XurrentChange -Id 200 -Status 'in_progress'
-```
-
-`New-XurrentChange` parameters: `-Subject` (required), `-Category` (`standard`, `non_standard`, `emergency`, `expedited`), `-Impact`, `-Status`, `-ManagerId`, `-AdditionalProperties`.
-
----
-
-### Problems
-
-```powershell
-Get-XurrentProblem
-Get-XurrentProblem -Id 88
-New-XurrentProblem -Subject 'Recurring login failures' -Impact 'high' -TeamId 10
-Set-XurrentProblem -Id 88 -Status 'change_requested'
-```
-
-`New-XurrentProblem` parameters: `-Subject` (required), `-Impact`, `-Status`, `-ManagerId`, `-TeamId`, `-AdditionalProperties`.
-
----
-
-### Sites
-
-```powershell
-Get-XurrentSite
-Get-XurrentSite -Id 3
-New-XurrentSite -Name 'New York Office' -Country 'US' -TimeZone 'America/New_York'
-```
-
-`New-XurrentSite` parameters: `-Name` (required), `-Country` (ISO 3166-1 alpha-2), `-TimeZone` (IANA), `-AdditionalProperties`.
-
----
-
-### Time Entries
-
-```powershell
-Get-XurrentTimeEntry
-Get-XurrentTimeEntry -Id 500
-New-XurrentTimeEntry -PersonId 42 -TimeSpent 60 -RequestId 12345 -Note 'Investigation'
-Set-XurrentTimeEntry -Id 500 -TimeSpent 90
-```
-
-`New-XurrentTimeEntry` parameters: `-PersonId` (required), `-TimeSpent` (required, minutes), `-Date` (yyyy-MM-dd, defaults to today), `-RequestId`, `-Note`, `-AdditionalProperties`.
-
----
-
-### Generic Query
-
-Use `Invoke-XurrentQuery` to call any Xurrent API endpoint not covered by a dedicated cmdlet.
-
-```powershell
-# GET request with query parameters
-Invoke-XurrentQuery -Resource 'requests' -QueryParameters @{ per_page = 10 }
-
-# POST with a request body
-Invoke-XurrentQuery -Resource 'requests' -Method POST -Body @{
-    subject  = 'New request'
-    category = 'incident'
-}
-
-# Retrieve all records from a custom endpoint
-Invoke-XurrentQuery -Resource 'requests/12345/notes' -AllPages
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `-Resource` | `string` | **(Required)** API resource path relative to the base URI. |
-| `-Method` | `string` | HTTP method: `GET` (default), `POST`, `PATCH`, `DELETE`. |
-| `-QueryParameters` | `hashtable` | Query string parameters. |
-| `-Body` | `hashtable` | Request body (serialised to JSON). |
-| `-AllPages` | `switch` | Follow pagination and return all records. |
-
----
-
-## Advanced Usage
-
-### Filtering Results
-
-All `Get-*` cmdlets accept a `-Filter` hashtable. Keys correspond to the Xurrent API filter names.
-
-```powershell
-# Open high-impact incidents assigned to a specific team
-Get-XurrentRequest -Filter @{
-    status   = 'in_progress'
-    category = 'incident'
-    impact   = 'high'
-    team_id  = 10
-}
-```
-
-### Pagination
-
-By default, cmdlets return the first page of results (25 records). Use `-AllPages` to automatically fetch every page.
-
-```powershell
-# Retrieve all requests
-Get-XurrentRequest -AllPages
-
-# Control how many records are fetched per API call
 Get-XurrentRequest -AllPages -PerPage 100
 ```
 
-### Selecting Fields
-
-Use `-Fields` to limit the response to specific fields, which reduces payload size and speeds up requests.
+#### Selecting Fields
 
 ```powershell
 Get-XurrentRequest -Fields 'id,subject,status,team' -AllPages
 ```
 
-### Custom Fields
-
-When creating or updating requests that use a UI Extension, pass custom field values as a hashtable to `-CustomFields`. The module converts the hashtable to the JSON array format required by the Xurrent API.
+#### Custom Fields
 
 ```powershell
-New-XurrentRequest -Subject 'New employee onboarding' -TemplateId 42 -CustomFields @{
-    first_name  = 'Jane'
-    last_name   = 'Doe'
-    start_date  = '2026-06-01'
-    department  = 'Engineering'
+New-XurrentRequest -Subject 'Onboarding' -TemplateId 42 -CustomFields @{
+    first_name = 'Jane'
+    last_name  = 'Doe'
+    start_date = '2026-06-01'
 }
 ```
 
-This is equivalent to the API payload:
-
-```json
-"custom_fields": [
-  { "id": "first_name", "value": "Jane" },
-  { "id": "last_name",  "value": "Doe" },
-  { "id": "start_date", "value": "2026-06-01" },
-  { "id": "department", "value": "Engineering" }
-]
-```
-
-### Pipeline Support
-
-Most `Get-*` and `Set-*` cmdlets accept `-Id` from the pipeline.
+#### Pipeline Support
 
 ```powershell
-# Resolve all in-progress requests
 Get-XurrentRequest -Filter @{ status = 'in_progress' } -AllPages |
     Set-XurrentRequest -Status 'solved'
-
-# Add a note to multiple requests
-@(1001, 1002, 1003) | Add-XurrentNote -Text 'Scheduled maintenance window'
 ```
 
-### WhatIf and Confirm
-
-All creation, update, and deletion cmdlets support PowerShell's standard `-WhatIf` and `-Confirm` parameters.
+#### WhatIf and Confirm
 
 ```powershell
-# Preview what would be created without actually creating it
 New-XurrentRequest -Subject 'Test request' -WhatIf
-
-# Prompt for confirmation before deleting
 Remove-XurrentRequest -Id 12345 -Confirm
 ```
+
+---
+
+## Xurrent.GraphQL Module
+
+The GraphQL module wraps the [Xurrent GraphQL API](https://developer.xurrent.com/graphql/) with cursor-based pagination, strongly-typed mutations, and flexible field selection.
+
+### Connecting (GraphQL)
+
+```powershell
+# Connect to the global endpoint (default)
+Connect-XurrentGraphQL -ApiToken 'your-api-token' -Account 'your-account'
+
+# Connect to a specific region
+Connect-XurrentGraphQL -ApiToken 'your-api-token' -Account 'your-account' -Region 'AU'
+
+# Connect using a custom endpoint
+Connect-XurrentGraphQL -ApiToken 'your-api-token' -Account 'your-account' -BaseUri 'https://custom.graphql.example.com'
+
+# Disconnect
+Disconnect-XurrentGraphQL
+```
+
+Supported regions: `Global` (default), `AU`, `QA`, `QA-AU`.
+
+| Region | Endpoint |
+|--------|----------|
+| `Global` | `https://graphql.xurrent.com/` |
+| `AU` | `https://graphql.au.xurrent.com/` |
+| `QA` | `https://graphql.xurrent.qa/` |
+| `QA-AU` | `https://graphql.au.xurrent.qa/` |
+
+### GraphQL Cmdlet Reference
+
+| Cmdlet | Description |
+|--------|-------------|
+| `Connect-XurrentGraphQL` | Stores API credentials for GraphQL calls |
+| `Disconnect-XurrentGraphQL` | Clears the GraphQL connection context |
+| `Get-XurrentGraphQLMe` | Get the current authenticated user |
+| `Invoke-XurrentGraphQLQuery` | Execute any GraphQL query |
+| `Invoke-XurrentGraphQLMutation` | Execute any GraphQL mutation |
+| `Get-XurrentGraphQLRequest` | Query requests |
+| `New-XurrentGraphQLRequest` | Create a request (requestCreate mutation) |
+| `Set-XurrentGraphQLRequest` | Update a request (requestUpdate mutation) |
+| `Get-XurrentGraphQLPerson` | Query people |
+| `New-XurrentGraphQLPerson` | Create a person (personCreate mutation) |
+| `Set-XurrentGraphQLPerson` | Update a person (personUpdate mutation) |
+| `Get-XurrentGraphQLTeam` | Query teams |
+| `Get-XurrentGraphQLOrganization` | Query organizations |
+| `Get-XurrentGraphQLService` | Query services |
+| `Get-XurrentGraphQLServiceInstance` | Query service instances |
+| `Get-XurrentGraphQLTask` | Query tasks |
+| `Get-XurrentGraphQLChange` | Query changes |
+| `Get-XurrentGraphQLProblem` | Query problems |
+| `Get-XurrentGraphQLSite` | Query sites |
+| `Get-XurrentGraphQLTimeEntry` | Query time entries |
+
+### GraphQL Advanced Usage
+
+#### Current User
+
+```powershell
+Get-XurrentGraphQLMe
+Get-XurrentGraphQLMe -Fields 'id name primaryEmail account { id name }'
+```
+
+#### Custom Queries
+
+```powershell
+Invoke-XurrentGraphQLQuery -Query '{ me { id name primaryEmail } }'
+
+# Query with variables
+Invoke-XurrentGraphQLQuery -Query 'query($id: ID!) { request(id: $id) { id subject status } }' `
+    -Variables @{ id = 'NG1lLTEyMzQ1' }
+```
+
+#### Custom Mutations
+
+```powershell
+$mutation = @'
+mutation($input: RequestCreateInput!) {
+    requestCreate(input: $input) {
+        errors { path message }
+        request { id requestId subject }
+    }
+}
+'@
+Invoke-XurrentGraphQLMutation -Mutation $mutation -Variables @{
+    input = @{ subject = 'New request'; category = 'other' }
+}
+```
+
+#### Field Selection
+
+All `Get-*` cmdlets accept a `-Fields` parameter to control which GraphQL fields are returned:
+
+```powershell
+Get-XurrentGraphQLRequest -Fields 'id requestId subject status team { name } member { name }'
+Get-XurrentGraphQLPerson -Fields 'id name primaryEmail organization { name }'
+```
+
+#### Cursor-based Pagination
+
+```powershell
+# Automatic pagination - returns all results
+Get-XurrentGraphQLRequest -AllPages
+
+# Control page size
+Get-XurrentGraphQLRequest -First 100 -AllPages
+
+# Manual pagination with custom queries
+$query = @'
+query($first: Int, $after: String) {
+    requests(first: $first, after: $after) {
+        nodes { id subject status }
+        pageInfo { endCursor hasNextPage }
+    }
+}
+'@
+Invoke-XurrentGraphQLQuery -Query $query -Variables @{ first = 100 } -AllPages
+```
+
+#### Creating Records
+
+```powershell
+# Create a request
+New-XurrentGraphQLRequest -Subject 'Email not working' -Category 'incident'
+
+# Create a request with team assignment
+New-XurrentGraphQLRequest -Subject 'New laptop' -Category 'rfc' -TeamId 'NG1lLTEwMQ'
+
+# Create a person
+New-XurrentGraphQLPerson -PrimaryEmail 'bob@example.com' -Name 'Bob Smith' -JobTitle 'Engineer'
+```
+
+#### Updating Records
+
+```powershell
+# Update request status
+Set-XurrentGraphQLRequest -Id 'NG1lLTEyMzQ1' -Status 'in_progress'
+
+# Update a person
+Set-XurrentGraphQLPerson -Id 'NG1lLTk5' -JobTitle 'Senior Engineer'
+```
+
+#### Pipeline Support
+
+```powershell
+Get-XurrentGraphQLRequest -Fields 'id' -AllPages |
+    Set-XurrentGraphQLRequest -Status 'solved'
+```
+
+#### WhatIf and Confirm
+
+All mutation cmdlets support `-WhatIf` and `-Confirm`:
+
+```powershell
+New-XurrentGraphQLRequest -Subject 'Test' -WhatIf
+```
+
+### Key Differences: REST vs GraphQL
+
+| Feature | REST Module | GraphQL Module |
+|---------|-------------|----------------|
+| **IDs** | Numeric IDs (e.g. `12345`) | Node IDs (base64 strings, e.g. `'NG1lLTEyMzQ1'`) |
+| **Field selection** | `-Fields 'id,subject,status'` (comma-separated) | `-Fields 'id subject status team { name }'` (GraphQL syntax) |
+| **Pagination** | Link header-based (`-AllPages`) | Cursor-based (`first`/`after`, `-AllPages`) |
+| **Filtering** | Query parameters (`-Filter @{}`) | GraphQL filter arguments (`-Filter @{}`) |
+| **Nested data** | Separate API calls needed | Single query with nested fields |
+| **Authentication header** | `X-4me-Account` | `X-Xurrent-Account` |
 
 ---
 
